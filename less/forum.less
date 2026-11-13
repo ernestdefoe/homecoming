@@ -1,0 +1,575 @@
+// Homecoming. Every colour comes from Flarum 2's CSS properties so themes,
+// dark mode and coloured headers carry through. Link rules start with
+// html:not(#x-hi) to beat themes that recolour links (Bespoke light's is 0,3,1).
+
+.Homecoming {
+  --homecoming-card: var(--body-bg);
+  --homecoming-soft: var(--control-bg);
+  --homecoming-border: var(--control-bg);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: var(--text-color);
+  background: var(--homecoming-card);
+  border: 1px solid var(--homecoming-border);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+.Homecoming-muted {
+  color: var(--muted-color);
+}
+
+.Homecoming-small {
+  font-size: 12px;
+  color: var(--muted-color);
+}
+
+// The strip ----------------------------------------------------------------
+
+.Homecoming-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+
+.Homecoming-hello {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 10 1 260px;
+  min-width: 0;
+}
+
+.Homecoming-avatar.Avatar {
+  --size: 56px;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  font-size: 22px;
+  line-height: 56px;
+}
+
+.Homecoming-helloText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.Homecoming-greeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  font-size: 13px;
+  color: var(--muted-color);
+}
+
+.Homecoming-greeting > span:first-of-type {
+  margin-right: 6px;
+}
+
+.Homecoming-greetingIcon {
+  color: var(--primary-color);
+}
+
+.Homecoming-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+html:not(#x-hi) .Homecoming .Homecoming-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--heading-color, var(--text-color));
+  overflow-wrap: anywhere;
+}
+
+.Homecoming-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.Homecoming-pill {
+  --homecoming-pill: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--homecoming-pill);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .icon {
+    font-size: 10px;
+  }
+}
+
+.Homecoming-pill--small {
+  font-size: 11px;
+  padding: 1px 8px;
+}
+
+.Homecoming-tiles {
+  display: flex;
+  gap: 10px;
+  flex: 1 1 250px;
+  min-width: 0;
+}
+
+html:not(#x-hi) .Homecoming a.Homecoming-tile {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 2px 14px;
+  border-left: 1px solid var(--control-bg);
+  color: var(--muted-color);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+
+    .Homecoming-tileLabel {
+      color: var(--text-color);
+    }
+  }
+}
+
+.Homecoming-tileCount {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-color);
+
+  .icon {
+    font-size: 15px;
+  }
+}
+
+.Homecoming-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-color);
+}
+
+.Homecoming-tileLabel {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--muted-color);
+}
+
+.Homecoming-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .Button {
+    flex: 1 1 auto;
+    justify-content: center;
+    white-space: nowrap;
+  }
+}
+
+// Beside the tiles, the two buttons stack, so the row fits Flarum's content column.
+.Homecoming-strip > .Homecoming-actions {
+  flex: 0 0 auto;
+  flex-direction: column;
+}
+
+// The cards ------------------------------------------------------------------
+
+.Homecoming-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+html:not(#x-hi) .Homecoming .Homecoming-heading {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-color);
+}
+
+.Homecoming-rank {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.Homecoming-rankRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 12px;
+}
+
+.Homecoming-points {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+  white-space: nowrap;
+}
+
+.Homecoming-climb {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.Homecoming-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--homecoming-soft);
+  overflow: hidden;
+}
+
+.Homecoming-barFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary-color);
+}
+
+.Homecoming-climbText {
+  font-size: 13px;
+  color: var(--muted-color);
+
+  strong {
+    color: var(--text-color);
+    font-weight: 600;
+  }
+}
+
+.Homecoming-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--homecoming-border);
+}
+
+.Homecoming-stat {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  min-width: 0;
+
+  dt {
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1.3;
+    color: var(--muted-color);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-color);
+    overflow-wrap: anywhere;
+  }
+}
+
+.Homecoming-grid--mini {
+  .Homecoming-stat {
+    dt {
+      font-size: 11px;
+      white-space: normal;
+    }
+
+    dd {
+      font-size: 16px;
+    }
+  }
+}
+
+// The compact card -------------------------------------------------------------
+
+.Homecoming-who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  min-width: 0;
+}
+
+.Homecoming-ringWrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .Homecoming-avatar.Avatar {
+    --size: 50px;
+    width: 50px;
+    height: 50px;
+    font-size: 19px;
+    line-height: 50px;
+  }
+}
+
+.Homecoming-ring {
+  position: absolute;
+  inset: 0;
+  width: 64px;
+  height: 64px;
+  transform: rotate(-90deg);
+
+  circle {
+    fill: none;
+    stroke-width: 4;
+  }
+}
+
+.Homecoming-ringTrack {
+  stroke: var(--homecoming-soft);
+}
+
+.Homecoming-ringFill {
+  stroke: var(--primary-color);
+  stroke-linecap: round;
+}
+
+.Homecoming-whoText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 120px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.Homecoming-name {
+  font-size: 16px;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Homecoming-wx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.Homecoming-wxIcon {
+  font-size: 22px;
+  color: var(--primary-color);
+}
+
+.Homecoming-wxText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+
+  strong {
+    font-size: 15px;
+    color: var(--text-color);
+  }
+}
+
+.Homecoming-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+html:not(#x-hi) .Homecoming a.Homecoming-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  margin: 0 -10px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--text-color);
+  text-decoration: none;
+
+  .icon {
+    width: 16px;
+    color: var(--muted-color);
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--homecoming-soft);
+    text-decoration: none;
+  }
+}
+
+.Homecoming-rowLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.Homecoming-badge {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--primary-color);
+  color: var(--body-bg);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.Homecoming-actions--compact .Button {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+}
+
+// Guests ---------------------------------------------------------------------
+
+.Homecoming-guest {
+  border-style: dashed;
+  border-color: var(--muted-more-color, var(--homecoming-border));
+}
+
+.Homecoming-guest > .Homecoming-actions {
+  flex-direction: row;
+}
+
+.Homecoming-guestText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 10 1 260px;
+  min-width: 0;
+}
+
+// Hosts ------------------------------------------------------------------------
+
+// FoF draws its own box: ours replaces it.
+.FofWidgets-Widget.HomecomingWidget {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+
+  .FofWidgets-Widget-content {
+    padding: 0;
+  }
+
+  .Homecoming {
+    margin-bottom: 0;
+  }
+}
+
+.Homecoming--page-builder {
+  margin-bottom: 0;
+}
+
+// Bespoke puts every widget in its own card: ours would be a card in a card.
+.Homecoming.Homecoming--bespoke {
+  margin-bottom: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+// Settings ---------------------------------------------------------------------
+
+.Homecoming-settingsNow {
+  color: var(--text-color);
+}
+
+.Homecoming-search {
+  display: flex;
+  gap: 8px;
+
+  .FormControl {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.Homecoming-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+html:not(#x-hi) .Homecoming-settings .Homecoming-result {
+  display: block;
+  width: 100%;
+  padding: 8px 4px;
+  text-align: left;
+  color: var(--link-color, var(--primary-color));
+  white-space: normal;
+}
+
+.Homecoming-error {
+  color: var(--validation-error-color, var(--muted-color));
+}
+
+@media (max-width: 767px) {
+  .Homecoming-strip {
+    padding: 16px;
+  }
+
+  .Homecoming-avatar.Avatar {
+    --size: 48px;
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+    font-size: 19px;
+  }
+
+  html:not(#x-hi) .Homecoming .Homecoming-title {
+    font-size: 19px;
+  }
+
+  .Homecoming-strip > .Homecoming-actions {
+    flex: 1 1 100%;
+    flex-direction: row;
+  }
+}

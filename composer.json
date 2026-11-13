@@ -1,0 +1,95 @@
+{
+    "name": "ernestdefoe/homecoming",
+    "description": "Homecoming: a welcome-back dashboard for your members. A greeting with the local weather, their unread discussions and new notifications, their rank and progress, and the stats you choose, as a strip above the discussion list or as widgets for FoF Widgets, Page Builder and Bespoke.",
+    "keywords": [
+        "flarum",
+        "flarum-extension",
+        "widget",
+        "welcome",
+        "dashboard",
+        "stats",
+        "weather",
+        "profile card"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ernest Defoe",
+            "email": "ernestdefoe@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/ernestdefoe/homecoming",
+    "support": {
+        "issues": "https://github.com/ernestdefoe/homecoming/issues",
+        "source": "https://github.com/ernestdefoe/homecoming"
+    },
+    "funding": [
+        {
+            "type": "other",
+            "url": "https://buymeacoffee.com/ernestdefoe"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "flarum/core": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ErnestDefoe\\Homecoming\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ErnestDefoe\\Homecoming\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Homecoming",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-house-user",
+                "backgroundColor": "#4d698e",
+                "color": "#fff"
+            },
+            "optional-dependencies": [
+                "flarum/likes",
+                "flarum/subscriptions",
+                "fof/byobu",
+                "fof/best-answer",
+                "fof/badges",
+                "fof/gamification",
+                "ernestdefoe/renown",
+                "ernestdefoe/ladder",
+                "ernestdefoe/answers",
+                "ernestdefoe/curio",
+                "ernestdefoe/member-map"
+            ]
+        }
+    },
+    "require-dev": {
+        "flarum/likes": "^2.0",
+        "flarum/phpstan": "^2.0",
+        "flarum/testing": "^2.0"
+    },
+    "scripts": {
+        "test": [
+            "@test:integration"
+        ],
+        "test:integration": "phpunit -c tests/phpunit.integration.xml",
+        "test:setup": "@php tests/integration/setup.php",
+        "analyse:phpstan": "phpstan analyse"
+    },
+    "scripts-descriptions": {
+        "test": "Runs all tests.",
+        "test:integration": "Runs all integration tests.",
+        "test:setup": "Sets up a database for use with integration tests. Execute this only once.",
+        "analyse:phpstan": "Run static analysis"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "beta",
+    "prefer-stable": true
+}
