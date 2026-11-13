@@ -26,6 +26,11 @@ class Forecasts
 
     public const TIMEOUT = 3;
 
+    /** Fixed hosts only, so no redirects to follow; a reply bigger than this is not a forecast. */
+    public const HTTP = ['timeout' => self::TIMEOUT, 'connect_timeout' => self::TIMEOUT, 'allow_redirects' => false];
+
+    public const MAX_BYTES = 262144;
+
     public function __construct(
         private readonly Cache $cache,
         private readonly Queue $queue,

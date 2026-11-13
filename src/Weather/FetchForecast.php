@@ -28,7 +28,7 @@ class FetchForecast extends AbstractJob
         }
 
         try {
-            $response = (new Client(['timeout' => Forecasts::TIMEOUT, 'connect_timeout' => Forecasts::TIMEOUT]))
+            $response = (new Client(Forecasts::HTTP))
                 ->get(self::URL, ['query' => [
                     'latitude' => $this->lat,
                     'longitude' => $this->lng,
@@ -37,7 +37,7 @@ class FetchForecast extends AbstractJob
                     'timezone' => 'auto',
                     'forecast_days' => 1,
                 ]]);
-            $forecast = self::parse(json_decode((string) $response->getBody(), true));
+            $forecast = self::parse(json_decode($response->getBody()->read(Forecasts::MAX_BYTES), true));
         } catch (Throwable) {
             $forecast = null;
         }

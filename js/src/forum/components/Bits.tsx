@@ -9,11 +9,23 @@ import { climb, count, degrees, links, t, tText, weatherIcon, condition, type Pi
 export function PillBadge(p: Pill | null, small = false): Mithril.Children {
   if (!p) return null;
   return (
-    <span className={`Homecoming-pill${small ? ' Homecoming-pill--small' : ''}`} style={p.color ? { '--homecoming-pill': p.color } : undefined}>
+    <span
+      className={`Homecoming-pill${small ? ' Homecoming-pill--small' : ''}`}
+      style={p.color ? { '--homecoming-pill': p.color, '--homecoming-pill-text': textOn(p.color) } : undefined}
+    >
       {p.icon ? <Icon name={p.icon} /> : null}
       <span>{p.name}</span>
     </span>
   );
+}
+
+/** Dark or light text, whichever reads on an admin-chosen group colour (light groups exist). */
+function textOn(color: string): string {
+  const hex = color.replace('#', '');
+  const full = hex.length === 3 ? hex.replace(/./g, (c) => c + c) : hex;
+  if (!/^[0-9a-f]{6}$/i.test(full)) return '#fff';
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+  return (r * 299 + g * 587 + b * 114) / 1000 >= 150 ? '#111' : '#fff';
 }
 
 /** "64°F, partly cloudy in Portland", or nothing. */

@@ -65,14 +65,14 @@ class Places
     public function search(string $query, string $locale): ?array
     {
         try {
-            $response = (new Client(['timeout' => Forecasts::TIMEOUT, 'connect_timeout' => Forecasts::TIMEOUT]))
+            $response = (new Client(Forecasts::HTTP))
                 ->get(self::GEOCODER, ['query' => [
                     'name' => $query,
                     'count' => 6,
                     'language' => preg_match('/^[a-z]{2}/', $locale, $m) ? $m[0] : 'en',
                     'format' => 'json',
                 ]]);
-            $body = json_decode((string) $response->getBody(), true);
+            $body = json_decode($response->getBody()->read(Forecasts::MAX_BYTES), true);
         } catch (Throwable) {
             return null;
         }

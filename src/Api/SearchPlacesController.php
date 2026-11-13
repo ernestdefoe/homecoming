@@ -22,6 +22,9 @@ class SearchPlacesController implements RequestHandlerInterface
 {
     private const PER_MINUTE = 10;
 
+    /** For the whole forum, so many accounts can't spend the geocoder's quota either. */
+    private const FORUM_PER_MINUTE = 120;
+
     public function __construct(
         private readonly Places $places,
         private readonly SettingsRepositoryInterface $settings,
@@ -44,23 +47,31 @@ class SearchPlacesController implements RequestHandlerInterface
             return new JsonResponse(['places' => []]);
         }
 
-        // One key per member, so a file cache never collects a file per request.
-        $key = 'homecoming.geo.'.$actor->id;
-        $minute = intdiv(time(), 60);
-        $count = $this->cache->get($key);
-        if (! is_array($count) || ($count['m'] ?? null) !== $minute) {
-            $count = ['m' => $minute, 'n' => 0];
-        }
-        if ($count['n'] >= self::PER_MINUTE) {
+        if (! $this->take('homecoming.geo.'.$actor->id, self::PER_MINUTE) || ! $this->take('homecoming.geo', self::FORUM_PER_MINUTE)) {
             return new JsonResponse(['places' => [], 'error' => 'busy'], 429);
         }
-        $count['n']++;
-        $this->cache->put($key, $count, 120);
 
         $places = $this->places->search($query, $this->locales->getLocale());
 
         return $places === null
             ? new JsonResponse(['places' => [], 'error' => 'unavailable'], 503)
             : new JsonResponse(['places' => $places]);
+    }
+
+    /** A per-minute counter under one fixed key (a file cache never collects a file per request). */
+    private function take(string $key, int $limit): bool
+    {
+        $minute = intdiv(time(), 60);
+        $count = $this->cache->get($key);
+        if (! is_array($count) || ($count['m'] ?? null) !== $minute) {
+            $count = ['m' => $minute, 'n' => 0];
+        }
+        if ($count['n'] >= $limit) {
+            return false;
+        }
+        $count['n']++;
+        $this->cache->put($key, $count, 120);
+
+        return true;
     }
 }
