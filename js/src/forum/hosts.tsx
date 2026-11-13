@@ -56,9 +56,8 @@ function registerWidgets(): void {
     component,
     title: () => app.translator.trans(def.titleKey),
     icon: def.icon,
-    // widgets-core: only where the admin placed it (opt-in). Bespoke: whenever it has something to show.
-    isDisabled: (ctx?: { host?: string }) =>
-      ctx?.host === 'bespoke' ? !hasContent(def.piece) : !placed(app, EXT, def.key) || !hasContent(def.piece),
+    // Opt-in: only where it is placed. Bespoke lists it as placed while it asks, so this holds there too.
+    isDisabled: () => !placed(app, EXT, def.key) || !hasContent(def.piece),
     isUnique: true,
     placement: def.placement,
     position: 0,
