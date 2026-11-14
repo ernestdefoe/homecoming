@@ -85,6 +85,11 @@ export default class WeatherSettings extends Component {
               {t('settings.use_location')}
             </Button>
           ) : null}
+          {canLocate() ? (
+            <p className="helpText Homecoming-osm">
+              {t('settings.osm', { a: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" /> })}
+            </p>
+          ) : null}
           {place?.source === 'own' ? (
             <Button className="Button Button--link" onclick={() => this.remove()}>
               {t('settings.remove')}

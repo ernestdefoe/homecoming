@@ -188,4 +188,39 @@ class HomecomingTest extends TestCase
         $this->send($this->request('POST', '/api/settings', ['authenticatedAs' => 1, 'json' => ['ernestdefoe-homecoming.default_town' => '']]));
         $this->assertNull($this->dashboard()['place']);
     }
+
+    #[Test]
+    public function the_town_lookup_runs_once_per_area(): void
+    {
+        $this->fakePlaces();
+        foreach ([[36.162664, -86.781602], [36.1641, -86.7849], [36.158, -86.776]] as [$lat, $lng]) {
+            $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => $lat, 'lng' => $lng]]));
+        }
+        // All three round to the same 0.01° cell: one lookup, the rest from the cache.
+        $this->assertSame([[36.16, -86.78]], FakePlaces::$reversed);
+        $this->assertSame('Nashville, Tennessee, United States', $this->dashboard()['place']['label']);
+    }
+
+    #[Test]
+    public function a_members_place_is_shown_to_them_alone(): void
+    {
+        $this->fakePlaces();
+        $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.162664, 'lng' => -86.781602]]));
+        $this->assertSame('Nashville, Tennessee, United States', $this->dashboard(2)['place']['label']);
+
+        // Another member (here the admin) never gets it: not in their own dashboard, not in the
+        // user API, not in a list of users. Neither the town nor the point is in any response.
+        $this->assertNull($this->dashboard(1)['place']);
+        foreach (['/api/users/2', '/api/users', '/api/users/2?include=groups'] as $url) {
+            $body = (string) $this->send($this->request('GET', $url, ['authenticatedAs' => 1]))->getBody();
+            $this->assertStringNotContainsString('Nashville', $body, $url);
+            $this->assertStringNotContainsString('36.16', $body, $url);
+            $this->assertStringNotContainsString('-86.78', $body, $url);
+        }
+        // The member's own user payload doesn't carry it either: only /api/homecoming does.
+        $own = (string) $this->send($this->request('GET', '/api/users/2', ['authenticatedAs' => 2]))->getBody();
+        $this->assertStringNotContainsString('Nashville', $own);
+        // Guests can't reach any of it.
+        $this->assertSame(401, $this->send($this->request('GET', '/api/homecoming'))->getStatusCode());
+    }
 }

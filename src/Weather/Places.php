@@ -8,6 +8,7 @@ use Flarum\Http\UrlGenerator;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use GuzzleHttp\Client;
+use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Database\ConnectionInterface;
 use Throwable;
 
@@ -31,6 +32,7 @@ class Places
         private readonly ExtensionManager $extensions,
         private readonly SettingsRepositoryInterface $settings,
         private readonly UrlGenerator $url,
+        private readonly Cache $cache,
     ) {
     }
 
@@ -109,19 +111,46 @@ class Places
 
     /**
      * The town at a point, as "Town, Region, Country", or null. The point is
-     * already rounded to about a kilometre; Nominatim asks every caller to
-     * say who they are, so the forum's address goes in the User-Agent.
+     * already rounded to about a kilometre.
+     *
+     * Nominatim's usage policy: at most one request a second for the whole
+     * application, an identifying client header, and no repeat lookups. So
+     * names are kept per 0.01° cell for a week (a failed lookup for ten
+     * minutes), and only one lookup a second leaves the forum: a second one
+     * waits a second once, then gives up (the weather then says "your
+     * location").
      */
     public function reverse(float $lat, float $lng, string $locale): ?string
+    {
+        $lang = preg_match('/^[a-z]{2}/', $locale, $m) ? $m[0] : 'en';
+        $key = sprintf('homecoming.rev.%s.%.2f_%.2f', $lang, round($lat, 2), round($lng, 2));
+
+        $hit = $this->cache->get($key);
+        if (is_string($hit)) {
+            return $hit === '' ? null : $hit;
+        }
+
+        if (! $this->slot()) {
+            return null;
+        }
+
+        $name = $this->lookup(round($lat, 2), round($lng, 2), $lang);
+        $this->cache->put($key, $name ?? '', $name === null ? 600 : 604800);
+
+        return $name;
+    }
+
+    /** One request to Nominatim. */
+    protected function lookup(float $lat, float $lng, string $lang): ?string
     {
         try {
             $response = (new Client(Forecasts::HTTP + ['headers' => ['User-Agent' => 'Homecoming (Flarum extension; '.$this->url->to('forum')->base().')']]))
                 ->get(self::REVERSE, ['query' => [
-                    'lat' => round($lat, 2),
-                    'lon' => round($lng, 2),
+                    'lat' => $lat,
+                    'lon' => $lng,
                     'format' => 'jsonv2',
                     'zoom' => 10,
-                    'accept-language' => preg_match('/^[a-z]{2}/', $locale, $m) ? $m[0] : 'en',
+                    'accept-language' => $lang,
                 ]]);
             $body = json_decode($response->getBody()->read(Forecasts::MAX_BYTES), true);
         } catch (Throwable) {
@@ -133,5 +162,18 @@ class Places
         $parts = array_filter([$town, $a['state'] ?? null, $a['country'] ?? null], fn ($p) => is_string($p) && $p !== '');
 
         return $parts ? mb_substr(implode(', ', array_unique($parts)), 0, 150) : null;
+    }
+
+    /** The forum's one Nominatim request this second: wait a second once if it's taken. */
+    private function slot(): bool
+    {
+        for ($try = 0; $try < 2; $try++) {
+            if ($this->cache->add('homecoming.nominatim', 1, 1)) {
+                return true;
+            }
+            usleep(1_100_000);
+        }
+
+        return false;
     }
 }

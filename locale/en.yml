@@ -49,7 +49,7 @@ ernestdefoe-homecoming:
       snow_showers: snow showers
       thunderstorm: thunderstorms
       line: "{temp}, {condition} in {place}"
-      use_location: Use my location for the weather
+      use_location: Use my location for the weather (town names © OpenStreetMap contributors)
       for_my_location: Weather for my location
       your_location: your location
       high_low: "High {high} · Low {low}"
@@ -66,6 +66,7 @@ ernestdefoe-homecoming:
       search: Search
       pick: Use this town
       use_location: Use my current location
+      osm: "Town names for your location: © <a>OpenStreetMap</a> contributors."
       remove: Forget my location
       using_map: "Showing the weather for {place}, your Member Map place."
       using_default: "Showing the forum's weather for {place}. Pick your own town, or use your location."

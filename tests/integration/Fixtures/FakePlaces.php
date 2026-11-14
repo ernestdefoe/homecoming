@@ -10,7 +10,7 @@ class FakePlaces extends Places
     /** @var list<array{0: float, 1: float}> */
     public static array $reversed = [];
 
-    public function reverse(float $lat, float $lng, string $locale): ?string
+    protected function lookup(float $lat, float $lng, string $lang): ?string
     {
         self::$reversed[] = [$lat, $lng];
 
