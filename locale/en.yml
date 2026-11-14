@@ -5,6 +5,9 @@ ernestdefoe-homecoming:
     welcome_strip: "Homecoming: welcome strip"
     stats_card: "Homecoming: stats card"
     compact_card: "Homecoming: compact card"
+    gdpr:
+      export: "Homecoming: the town chosen for the weather, and its point rounded to about a kilometre."
+      erase: "Homecoming: the town chosen for the weather is deleted."
 
   forum:
     greeting:

@@ -223,4 +223,29 @@ class HomecomingTest extends TestCase
         // Guests can't reach any of it.
         $this->assertSame(401, $this->send($this->request('GET', '/api/homecoming'))->getStatusCode());
     }
+
+    #[Test]
+    public function gdpr_exports_the_place_and_erases_it_in_both_modes(): void
+    {
+        $this->extension('flarum-gdpr', 'ernestdefoe-homecoming');
+        $this->fakePlaces();
+        $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.16, 'lng' => -86.78]]));
+
+        $c = $this->app()->getContainer();
+        $this->assertArrayHasKey(\ErnestDefoe\Homecoming\Gdpr\HomecomingPlace::class, $c->make(\Flarum\Gdpr\DataProcessor::class)->types());
+
+        $type = fn () => $c->make(\ErnestDefoe\Homecoming\Gdpr\HomecomingPlace::class, ['user' => User::findOrFail(2), 'erasureRequest' => null]);
+        $export = $type()->export();
+        $this->assertSame('homecoming/place.json', array_key_first($export[0]));
+        $this->assertStringContainsString('Nashville, Tennessee, United States', $export[0]['homecoming/place.json']);
+
+        // Anonymizing keeps the user row, so the foreign key never cleans up: the type must.
+        $type()->anonymize();
+        $this->assertSame(0, $this->database()->table('homecoming_places')->where('user_id', 2)->count());
+        $this->assertNull($type()->export());
+
+        $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.16, 'lng' => -86.78]]));
+        $type()->delete();
+        $this->assertSame(0, $this->database()->table('homecoming_places')->where('user_id', 2)->count());
+    }
 }

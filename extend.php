@@ -72,6 +72,11 @@ $extenders = [
         ->listen(Saved::class, DefaultTown::class),
 ];
 
+// flarum/gdpr: export the member's weather place, and erase it in both modes.
+$extenders[] = (new Extend\Conditional())->whenExtensionEnabled('flarum-gdpr', fn () => [
+    (new \Flarum\Gdpr\Extend\UserData())->addType(\ErnestDefoe\Homecoming\Gdpr\HomecomingPlace::class),
+]);
+
 // The blocks only offer the pieces in Page Builder's editor; the client draws them like every other host.
 if (class_exists(\Ernestdefoe\PageBuilder\Extend\PageBuilderBlock::class)) {
     $extenders[] = new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\WelcomeStripBlock::class);
