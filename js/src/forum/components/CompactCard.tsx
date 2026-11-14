@@ -4,7 +4,7 @@ import Avatar from 'flarum/common/components/Avatar';
 import Icon from 'flarum/common/components/Icon';
 import Link from 'flarum/common/components/Link';
 import { dashboard } from '../store';
-import { Counts, PillBadge, shortPlace } from './Bits';
+import { Counts, LocateButton, PillBadge, shortPlace } from './Bits';
 import {
   canStart,
   climb,
@@ -73,8 +73,11 @@ export default class CompactCard extends Component<{ host: string }> {
                   : ''}
               </span>
             </div>
+            {LocateButton(d)}
           </div>
-        ) : null}
+        ) : (
+          LocateButton(d)
+        )}
         {Counts(d, 'rows')}
         {d?.stats?.length ? (
           <dl className="Homecoming-grid Homecoming-grid--mini">

@@ -6,7 +6,7 @@ use ErnestDefoe\Homecoming\Weather\Places;
 use Flarum\Http\RequestUtil;
 use Flarum\Locale\LocaleManager;
 use Flarum\Settings\SettingsRepositoryInterface;
-use Illuminate\Contracts\Cache\Repository as Cache;
+use ErnestDefoe\Homecoming\RateLimit;
 use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -28,7 +28,7 @@ class SearchPlacesController implements RequestHandlerInterface
     public function __construct(
         private readonly Places $places,
         private readonly SettingsRepositoryInterface $settings,
-        private readonly Cache $cache,
+        private readonly RateLimit $limits,
         private readonly LocaleManager $locales,
     ) {
     }
@@ -47,7 +47,7 @@ class SearchPlacesController implements RequestHandlerInterface
             return new JsonResponse(['places' => []]);
         }
 
-        if (! $this->take('homecoming.geo.'.$actor->id, self::PER_MINUTE) || ! $this->take('homecoming.geo', self::FORUM_PER_MINUTE)) {
+        if (! $this->limits->take('homecoming.geo.'.$actor->id, self::PER_MINUTE) || ! $this->limits->take('homecoming.geo', self::FORUM_PER_MINUTE)) {
             return new JsonResponse(['places' => [], 'error' => 'busy'], 429);
         }
 
@@ -56,22 +56,5 @@ class SearchPlacesController implements RequestHandlerInterface
         return $places === null
             ? new JsonResponse(['places' => [], 'error' => 'unavailable'], 503)
             : new JsonResponse(['places' => $places]);
-    }
-
-    /** A per-minute counter under one fixed key (a file cache never collects a file per request). */
-    private function take(string $key, int $limit): bool
-    {
-        $minute = intdiv(time(), 60);
-        $count = $this->cache->get($key);
-        if (! is_array($count) || ($count['m'] ?? null) !== $minute) {
-            $count = ['m' => $minute, 'n' => 0];
-        }
-        if ($count['n'] >= $limit) {
-            return false;
-        }
-        $count['n']++;
-        $this->cache->put($key, $count, 120);
-
-        return true;
     }
 }

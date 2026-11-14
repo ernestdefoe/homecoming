@@ -4,7 +4,8 @@ import FieldSet from 'flarum/common/components/FieldSet';
 import Button from 'flarum/common/components/Button';
 import type Mithril from 'mithril';
 import { dashboard, refresh } from '../store';
-import { t, tText } from './util';
+import { refreshPlace } from './Bits';
+import { canLocate, locating, t, tText, useMyLocation } from './util';
 
 interface Place {
   label: string;
@@ -28,7 +29,9 @@ export default class WeatherSettings extends Component {
         <p className="helpText">{t('settings.help')}</p>
         <p className="Homecoming-settingsNow">
           {place
-            ? t(place.source === 'own' ? 'settings.using_own' : 'settings.using_map', { place: <strong>{place.label}</strong> })
+            ? t(`settings.${place.source === 'own' ? 'using_own' : place.source === 'member-map' ? 'using_map' : 'using_default'}`, {
+                place: <strong>{place.label || tText('weather.your_location')}</strong>,
+              })
             : t('settings.none')}
         </p>
         <div className="Form-group">
@@ -71,6 +74,16 @@ export default class WeatherSettings extends Component {
             ) : (
               <p className="helpText">{t('settings.no_results')}</p>
             )
+          ) : null}
+          {canLocate() ? (
+            <Button
+              className="Button Homecoming-useLocation"
+              icon="fas fa-location-crosshairs"
+              loading={locating.busy}
+              onclick={() => useMyLocation(refreshPlace)}
+            >
+              {t('settings.use_location')}
+            </Button>
           ) : null}
           {place?.source === 'own' ? (
             <Button className="Button Button--link" onclick={() => this.remove()}>

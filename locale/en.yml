@@ -49,6 +49,9 @@ ernestdefoe-homecoming:
       snow_showers: snow showers
       thunderstorm: thunderstorms
       line: "{temp}, {condition} in {place}"
+      use_location: Use my location for the weather
+      for_my_location: Weather for my location
+      your_location: your location
       high_low: "High {high} · Low {low}"
     guest:
       title: New here? Pull up a chair.
@@ -57,13 +60,15 @@ ernestdefoe-homecoming:
       log_in: Log in
     settings:
       heading: Weather
-      help: Your welcome strip can show the weather where you live. Only the town is used, never your exact location.
+      help: Your welcome strip can show the weather where you are. Pick a town, or let your browser say where you are; either way only the town is kept, never your exact location.
       search_label: Your town
       search_placeholder: Type a town or city
       search: Search
       pick: Use this town
-      remove: Stop showing weather
+      use_location: Use my current location
+      remove: Forget my location
       using_map: "Showing the weather for {place}, your Member Map place."
+      using_default: "Showing the forum's weather for {place}. Pick your own town, or use your location."
       using_own: "Showing the weather for {place}."
       none: Pick a town to see its weather on your welcome strip.
       no_results: No towns match that name.
@@ -100,5 +105,9 @@ ernestdefoe-homecoming:
       weather_help: "For members who set a town (or a Member Map place). The forum fetches it from Open-Meteo in the background, at most once every 30 minutes per area; only the area's rounded coordinates are sent."
       weather_unit: Temperature unit
       weather_unit_help: Members can choose their own in their settings.
+      geolocate: Offer "Use my location"
+      geolocate_help: "A small button beside the weather. Only when a member clicks it does their browser ask where they are; the point is rounded to about a kilometre before it leaves the browser, and only the town is kept (looked up on OpenStreetMap)."
+      default_town: Default town for the weather
+      default_town_help: For members with no town of their own and no Member Map place. Type a town (for example Nashville, Tennessee) and save; leave it empty for no default.
       weather_cap: Weather fetches per minute, at most
       weather_cap_help: For the whole forum. Members whose area isn't fetched yet see no weather until the next one.

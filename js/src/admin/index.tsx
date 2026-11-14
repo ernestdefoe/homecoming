@@ -51,6 +51,8 @@ export const extend = [
       }),
       50
     )
+    .setting(() => ({ setting: setting('geolocate'), type: 'boolean', label: t('geolocate'), help: t('geolocate_help') }), 45)
+    .setting(() => ({ setting: setting('default_town'), type: 'text', label: t('default_town'), help: t('default_town_help') }), 44)
     .setting(() => ({ setting: setting('weather_cap'), type: 'number', label: t('weather_cap'), help: t('weather_cap_help'), min: 1, max: 600 }), 40),
 ];
 

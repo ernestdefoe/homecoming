@@ -4,7 +4,7 @@ import Avatar from 'flarum/common/components/Avatar';
 import Icon from 'flarum/common/components/Icon';
 import Link from 'flarum/common/components/Link';
 import { dashboard } from '../store';
-import { Counts, PillBadge, WeatherLine } from './Bits';
+import { Counts, LocateButton, PillBadge, WeatherLine } from './Bits';
 import { canStart, firstName, greeting, links, pill, startDiscussion, t } from './util';
 
 /** Greeting, name, rank, unread and notifications, and the two buttons, in one row that wraps on narrow screens. */
@@ -27,6 +27,7 @@ export default class WelcomeStrip extends Component<{ host: string }> {
               <Icon name={h >= 6 && h < 19 ? 'fas fa-sun' : 'fas fa-moon'} className="Homecoming-greetingIcon" />
               <span>{greeting()}</span>
               {WeatherLine(d)}
+              {LocateButton(d)}
             </div>
             <h2 className="Homecoming-title">{t('welcome_back', { name: firstName(user) })}</h2>
             <div className="Homecoming-meta">

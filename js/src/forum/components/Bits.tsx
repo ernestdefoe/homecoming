@@ -3,7 +3,8 @@ import Icon from 'flarum/common/components/Icon';
 import Link from 'flarum/common/components/Link';
 import type Mithril from 'mithril';
 import type { Dashboard } from '../store';
-import { climb, count, degrees, links, t, tText, weatherIcon, condition, type Pill } from './util';
+import { refresh } from '../store';
+import { canLocate, climb, count, degrees, links, locating, t, tText, useMyLocation, weatherIcon, condition, type Pill } from './util';
 
 /** The rank or group pill, in the group's colour when it has one. */
 export function PillBadge(p: Pill | null, small = false): Mithril.Children {
@@ -41,7 +42,40 @@ export function WeatherLine(d: Dashboard | null): Mithril.Children {
 }
 
 export function shortPlace(label: string): string {
-  return label.split(',')[0].trim();
+  return label.split(',')[0].trim() || tText('weather.your_location');
+}
+
+/** After a new place: ask now, and again once the background fetch has had time to bring its forecast. */
+export function refreshPlace(): void {
+  refresh();
+  setTimeout(refresh, 5000);
+}
+
+/**
+ * "Use my location": an icon beside the weather, or a small text button where
+ * there is no weather yet. Never asks on its own.
+ */
+export function LocateButton(d: Dashboard | null): Mithril.Children {
+  if (!canLocate() || !d) return null;
+  const label = tText('weather.use_location');
+  const icon = <Icon name={locating.busy ? 'fas fa-spinner fa-spin' : 'fas fa-location-crosshairs'} />;
+  return d.weather && d.place ? (
+    <button
+      type="button"
+      className="Homecoming-locate"
+      aria-label={label}
+      title={label}
+      disabled={locating.busy}
+      onclick={() => useMyLocation(refreshPlace)}
+    >
+      {icon}
+    </button>
+  ) : (
+    <button type="button" className="Homecoming-locate Homecoming-locate--text" disabled={locating.busy} onclick={() => useMyLocation(refreshPlace)}>
+      {icon}
+      <span>{t('weather.for_my_location')}</span>
+    </button>
+  );
 }
 
 /** Unread discussions and notifications, as links. */

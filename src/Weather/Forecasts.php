@@ -2,6 +2,7 @@
 
 namespace ErnestDefoe\Homecoming\Weather;
 
+use ErnestDefoe\Homecoming\RateLimit;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Cache\Repository as Cache;
@@ -36,6 +37,7 @@ class Forecasts
         private readonly Queue $queue,
         private readonly SettingsRepositoryInterface $settings,
         private readonly Container $container,
+        private readonly RateLimit $limits,
     ) {
     }
 
@@ -110,21 +112,8 @@ class Forecasts
         $this->queue->push($job);
     }
 
-    /** Fetches this minute, forum-wide. One key, so a file cache never collects a file per minute. */
     private function underCap(): bool
     {
-        $cap = max(1, (int) $this->settings->get('ernestdefoe-homecoming.weather_cap'));
-        $minute = intdiv(time(), 60);
-        $count = $this->cache->get('homecoming.wxcap');
-        if (! is_array($count) || ($count['m'] ?? null) !== $minute) {
-            $count = ['m' => $minute, 'n' => 0];
-        }
-        if ($count['n'] >= $cap) {
-            return false;
-        }
-        $count['n']++;
-        $this->cache->put('homecoming.wxcap', $count, 120);
-
-        return true;
+        return $this->limits->take('homecoming.wxcap', max(1, (int) $this->settings->get('ernestdefoe-homecoming.weather_cap')));
     }
 }

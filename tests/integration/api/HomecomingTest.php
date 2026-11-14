@@ -3,8 +3,10 @@
 namespace ErnestDefoe\Homecoming\Tests\integration\api;
 
 use Carbon\Carbon;
+use ErnestDefoe\Homecoming\Tests\integration\Fixtures\FakePlaces;
 use ErnestDefoe\Homecoming\Weather\FetchForecast;
 use ErnestDefoe\Homecoming\Weather\Forecasts;
+use ErnestDefoe\Homecoming\Weather\Places;
 use Flarum\Discussion\Discussion;
 use Flarum\Post\Post;
 use Flarum\Testing\integration\RetrievesAuthorizedUsers;
@@ -130,5 +132,60 @@ class HomecomingTest extends TestCase
             FetchForecast::parse(['current' => ['temperature_2m' => 17.6, 'weather_code' => 61, 'is_day' => 0], 'daily' => ['temperature_2m_max' => [19.7], 'temperature_2m_min' => [9.2]]])
         );
         $this->assertSame([36.2, -86.8], Forecasts::area(36.1627, -86.7816));
+    }
+
+    private function fakePlaces(): void
+    {
+        $c = $this->app()->getContainer();
+        $c->bind(Places::class, FakePlaces::class);
+        FakePlaces::$reversed = [];
+    }
+
+    #[Test]
+    public function use_my_location_keeps_a_rounded_point_and_its_town(): void
+    {
+        // A guest is refused (by the CSRF check or the login check) and nothing is saved.
+        $this->assertContains($this->send($this->request('POST', '/api/homecoming/locate', ['json' => ['lat' => 1, 'lng' => 1]]))->getStatusCode(), [400, 401]);
+        $this->assertSame(0, $this->database()->table('homecoming_places')->count());
+
+        $this->fakePlaces();
+        $res = $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.162664, 'lng' => -86.781602]]));
+        $this->assertSame(200, $res->getStatusCode());
+        $this->assertSame([[36.16, -86.78]], FakePlaces::$reversed, 'only the rounded point reaches the town lookup');
+
+        $row = $this->database()->table('homecoming_places')->where('user_id', 2)->first();
+        $this->assertSame(['36.16', '-86.78', 'Nashville, Tennessee, United States'], [(string) (float) $row->lat, (string) (float) $row->lng, $row->label]);
+        $this->assertSame(['label' => 'Nashville, Tennessee, United States', 'source' => 'own'], $this->dashboard()['place']);
+
+        $bad = $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 'here', 'lng' => 0]]));
+        $this->assertSame(422, $bad->getStatusCode());
+    }
+
+    #[Test]
+    public function use_my_location_can_be_switched_off(): void
+    {
+        $this->setting('ernestdefoe-homecoming.geolocate', '0');
+        $this->fakePlaces();
+        $res = $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.16, 'lng' => -86.78]]));
+        $this->assertSame(404, $res->getStatusCode());
+        $this->assertSame([], FakePlaces::$reversed);
+    }
+
+    #[Test]
+    public function the_forum_default_town_comes_after_the_members_own_place(): void
+    {
+        $this->fakePlaces();
+        $saved = $this->send($this->request('POST', '/api/settings', ['authenticatedAs' => 1, 'json' => ['ernestdefoe-homecoming.default_town' => 'Portland']]));
+        $this->assertSame(204, $saved->getStatusCode());
+        $this->assertSame(['label' => 'Portland, Oregon, United States', 'source' => 'default'], $this->dashboard()['place']);
+
+        // The member's own place wins.
+        $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.16, 'lng' => -86.78]]));
+        $this->assertSame('own', $this->dashboard()['place']['source']);
+
+        // An empty default town clears it.
+        $this->send($this->request('DELETE', '/api/homecoming/place', ['authenticatedAs' => 2]));
+        $this->send($this->request('POST', '/api/settings', ['authenticatedAs' => 1, 'json' => ['ernestdefoe-homecoming.default_town' => '']]));
+        $this->assertNull($this->dashboard()['place']);
     }
 }

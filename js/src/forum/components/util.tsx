@@ -137,3 +137,48 @@ export function startDiscussion(): void {
 export function showModal(name: 'LogInModal' | 'SignUpModal'): void {
   app.modal.show(() => (flarum as any).reg.asyncModuleImport(`flarum/forum/components/${name}`));
 }
+
+/** "Use my location" is offered: weather and the admin switch on, a browser that can ask, over https. */
+export function canLocate(): boolean {
+  return (
+    !!app.forum.attribute('homecomingWeather') &&
+    !!app.forum.attribute('homecomingGeolocate') &&
+    typeof navigator !== 'undefined' &&
+    'geolocation' in navigator &&
+    window.isSecureContext
+  );
+}
+
+export const locating = { busy: false };
+
+/**
+ * Ask the browser where the member is, only because they clicked. The point is
+ * rounded to two decimals (about a kilometre) before it leaves the browser.
+ * Declined, unavailable or slow: nothing changes and nothing is shown.
+ */
+export function useMyLocation(done: () => void): void {
+  if (locating.busy || !canLocate()) return;
+  locating.busy = true;
+  m.redraw();
+  const finish = () => {
+    locating.busy = false;
+    m.redraw();
+  };
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const round = (n: number) => Math.round(n * 100) / 100;
+      app
+        .request({
+          method: 'POST',
+          url: app.forum.attribute('apiUrl') + '/homecoming/locate',
+          body: { lat: round(pos.coords.latitude), lng: round(pos.coords.longitude) },
+          errorHandler: () => {},
+        })
+        .then(done)
+        .catch(() => {})
+        .finally(finish);
+    },
+    finish,
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 3600000 }
+  );
+}

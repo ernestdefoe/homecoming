@@ -15,10 +15,12 @@
 
 use ErnestDefoe\Homecoming\Api;
 use ErnestDefoe\Homecoming\Dashboard;
+use ErnestDefoe\Homecoming\DefaultTown;
 use ErnestDefoe\Homecoming\Widget;
 use Flarum\Discussion\Event\UserRead;
 use Flarum\Extend;
 use Flarum\Post\Event\Posted;
+use Flarum\Settings\Event\Saved;
 
 $extenders = [
     (new Extend\Frontend('forum'))
@@ -36,6 +38,7 @@ $extenders = [
         ->get('/homecoming', 'homecoming.show', Api\ShowController::class)
         ->get('/homecoming/places', 'homecoming.places', Api\SearchPlacesController::class)
         ->post('/homecoming/place', 'homecoming.place.save', Api\PlaceController::class)
+        ->post('/homecoming/locate', 'homecoming.locate', Api\LocateController::class)
         ->delete('/homecoming/place', 'homecoming.place.delete', Api\PlaceController::class),
 
     // 🚨 Literal keys: anything here runs while the forum boots, and a class constant would make
@@ -51,10 +54,13 @@ $extenders = [
         ->default('ernestdefoe-homecoming.weather', true)
         ->default('ernestdefoe-homecoming.weather_unit', 'c')
         ->default('ernestdefoe-homecoming.weather_cap', 30)
+        ->default('ernestdefoe-homecoming.geolocate', true)
+        ->default('ernestdefoe-homecoming.default_town', '')
         ->serializeToForum('homecomingPlacement', 'ernestdefoe-homecoming.placement')
         ->serializeToForum('homecomingGuestNudge', 'ernestdefoe-homecoming.guest_nudge', 'boolval')
         ->serializeToForum('homecomingWeather', 'ernestdefoe-homecoming.weather', 'boolval')
-        ->serializeToForum('homecomingUnit', 'ernestdefoe-homecoming.weather_unit'),
+        ->serializeToForum('homecomingUnit', 'ernestdefoe-homecoming.weather_unit')
+        ->serializeToForum('homecomingGeolocate', 'ernestdefoe-homecoming.geolocate', 'boolval'),
 
     (new Extend\User())
         ->registerPreference('homecomingUnit', fn ($value) => in_array($value, ['c', 'f'], true) ? $value : null, null),
@@ -62,7 +68,8 @@ $extenders = [
     // A member's own counts change when they read or post: drop their answer.
     (new Extend\Event())
         ->listen(UserRead::class, fn (UserRead $event) => resolve(Dashboard::class)->forget((int) $event->state->user_id))
-        ->listen(Posted::class, fn (Posted $event) => resolve(Dashboard::class)->forget((int) $event->post->user_id)),
+        ->listen(Posted::class, fn (Posted $event) => resolve(Dashboard::class)->forget((int) $event->post->user_id))
+        ->listen(Saved::class, DefaultTown::class),
 ];
 
 // The blocks only offer the pieces in Page Builder's editor; the client draws them like every other host.
