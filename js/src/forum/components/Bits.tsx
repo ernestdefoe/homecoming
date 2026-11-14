@@ -30,13 +30,15 @@ function textOn(color: string): string {
 }
 
 /** "64°F, partly cloudy in Portland", or nothing. */
-export function WeatherLine(d: Dashboard | null): Mithril.Children {
+/** The weather, with anything passed in kept on the same line (the location button never wraps alone). */
+export function WeatherLine(d: Dashboard | null, after: Mithril.Children = null): Mithril.Children {
   if (!d?.weather || !d.place) return null;
   const w = d.weather;
   return (
     <span className="Homecoming-weather">
       <Icon name={weatherIcon(w.code, w.day)} />
       <span>{t('weather.line', { temp: degrees(w.temp), condition: tText(`weather.${condition(w.code)}`), place: shortPlace(d.place.label) })}</span>
+      {after}
     </span>
   );
 }

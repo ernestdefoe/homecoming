@@ -26,8 +26,7 @@ export default class WelcomeStrip extends Component<{ host: string }> {
             <div className="Homecoming-greeting">
               <Icon name={h >= 6 && h < 19 ? 'fas fa-sun' : 'fas fa-moon'} className="Homecoming-greetingIcon" />
               <span>{greeting()}</span>
-              {WeatherLine(d)}
-              {LocateButton(d)}
+              {d?.weather && d.place ? WeatherLine(d, LocateButton(d)) : LocateButton(d)}
             </div>
             <h2 className="Homecoming-title">{t('welcome_back', { name: firstName(user) })}</h2>
             <div className="Homecoming-meta">
