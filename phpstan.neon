@@ -21,3 +21,9 @@ parameters:
         -
             identifier: class.notFound
             path: src/Progress.php
+        # Page Builder is a paid extension, not on Packagist: extend.php only builds its
+        # blocks inside whenExtensionEnabled('ernestdefoe-page-builder').
+        -
+            message: '#Ernestdefoe\\PageBuilder\\Extend\\PageBuilderBlock#'
+            identifier: class.notFound
+            path: extend.php

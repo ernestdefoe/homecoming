@@ -167,14 +167,22 @@ export function useMyLocation(done: () => void): void {
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const round = (n: number) => Math.round(n * 100) / 100;
-      app
-        .request({
-          method: 'POST',
-          url: app.forum.attribute('apiUrl') + '/homecoming/locate',
-          body: { lat: round(pos.coords.latitude), lng: round(pos.coords.longitude) },
-          errorHandler: () => {},
+      const body = { lat: round(pos.coords.latitude), lng: round(pos.coords.longitude) };
+      const send = () =>
+        app.request<{ retry?: boolean }>({ method: 'POST', url: app.forum.attribute('apiUrl') + '/homecoming/locate', body, errorHandler: () => {} });
+      send()
+        .then((res) => {
+          done();
+          // The forum's one town lookup this second was taken: the place is saved; ask once more for its name.
+          if (res?.retry)
+            setTimeout(
+              () =>
+                send()
+                  .then(done)
+                  .catch(() => {}),
+              1200
+            );
         })
-        .then(done)
         .catch(() => {})
         .finally(finish);
     },

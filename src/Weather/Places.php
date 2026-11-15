@@ -116,9 +116,11 @@ class Places
      * Nominatim's usage policy: at most one request a second for the whole
      * application, an identifying client header, and no repeat lookups. So
      * names are kept per 0.01° cell for a week (a failed lookup for ten
-     * minutes), and only one lookup a second leaves the forum: a second one
-     * waits a second once, then gives up (the weather then says "your
-     * location").
+     * minutes), and only one lookup a second leaves the forum. A lookup that
+     * finds the second taken never waits (no PHP worker is held): it throws
+     * LookupBusy, and the browser asks again a second later.
+     *
+     * @throws LookupBusy
      */
     public function reverse(float $lat, float $lng, string $locale): ?string
     {
@@ -130,8 +132,8 @@ class Places
             return $hit === '' ? null : $hit;
         }
 
-        if (! $this->slot()) {
-            return null;
+        if (! $this->cache->add('homecoming.nominatim', 1, 1)) {
+            throw new LookupBusy();
         }
 
         $name = $this->lookup(round($lat, 2), round($lng, 2), $lang);
@@ -162,18 +164,5 @@ class Places
         $parts = array_filter([$town, $a['state'] ?? null, $a['country'] ?? null], fn ($p) => is_string($p) && $p !== '');
 
         return $parts ? mb_substr(implode(', ', array_unique($parts)), 0, 150) : null;
-    }
-
-    /** The forum's one Nominatim request this second: wait a second once if it's taken. */
-    private function slot(): bool
-    {
-        for ($try = 0; $try < 2; $try++) {
-            if ($this->cache->add('homecoming.nominatim', 1, 1)) {
-                return true;
-            }
-            usleep(1_100_000);
-        }
-
-        return false;
     }
 }

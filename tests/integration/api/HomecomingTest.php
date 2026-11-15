@@ -190,6 +190,52 @@ class HomecomingTest extends TestCase
     }
 
     #[Test]
+    public function a_default_town_that_cannot_be_found_is_never_saved(): void
+    {
+        $this->fakePlaces();
+        $this->send($this->request('POST', '/api/settings', ['authenticatedAs' => 1, 'json' => ['ernestdefoe-homecoming.default_town' => 'Portland']]));
+
+        // No match, and a geocoder that can't be reached: 422 with a message, and the old default stays whole.
+        foreach (['Nowhere', 'Offline'] as $town) {
+            $res = $this->send($this->request('POST', '/api/settings', ['authenticatedAs' => 1, 'json' => ['ernestdefoe-homecoming.default_town' => $town]]));
+            $this->assertSame(422, $res->getStatusCode(), $town);
+            $this->assertStringContainsString('default_town', (string) $res->getBody());
+        }
+
+        $saved = $this->database()->table('settings')->whereIn('key', [
+            'ernestdefoe-homecoming.default_town', 'ernestdefoe-homecoming.default_lat', 'ernestdefoe-homecoming.default_lng', 'ernestdefoe-homecoming.default_label',
+        ])->pluck('value', 'key')->all();
+        $this->assertSame('Portland', $saved['ernestdefoe-homecoming.default_town']);
+        $this->assertSame(['45.52', '-122.68', 'Portland, Oregon, United States'], [
+            $saved['ernestdefoe-homecoming.default_lat'], $saved['ernestdefoe-homecoming.default_lng'], $saved['ernestdefoe-homecoming.default_label'],
+        ]);
+    }
+
+    #[Test]
+    public function a_busy_town_lookup_never_waits_and_asks_the_browser_to_retry(): void
+    {
+        $this->fakePlaces();
+        // Another request holds this second's Nominatim slot.
+        $this->app()->getContainer()->make(Cache::class)->add('homecoming.nominatim', 1, 60);
+
+        $start = microtime(true);
+        $res = $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.16, 'lng' => -86.78]]));
+        $this->assertLessThan(0.5, microtime(true) - $start, 'no sleeping in the request');
+        $this->assertSame(200, $res->getStatusCode());
+        $body = json_decode((string) $res->getBody(), true);
+        $this->assertTrue($body['retry']);
+        $this->assertSame('', $body['place']['label']);
+        $this->assertSame([], FakePlaces::$reversed, 'no lookup while the slot is taken');
+        $this->assertSame(1, $this->database()->table('homecoming_places')->where('user_id', 2)->count(), 'the point is saved anyway');
+
+        // The browser's retry, once the slot is free, names the town.
+        $this->app()->getContainer()->make(Cache::class)->forget('homecoming.nominatim');
+        $again = json_decode((string) $this->send($this->request('POST', '/api/homecoming/locate', ['authenticatedAs' => 2, 'json' => ['lat' => 36.16, 'lng' => -86.78]]))->getBody(), true);
+        $this->assertFalse($again['retry']);
+        $this->assertSame('Nashville, Tennessee, United States', $this->dashboard()['place']['label']);
+    }
+
+    #[Test]
     public function the_town_lookup_runs_once_per_area(): void
     {
         $this->fakePlaces();

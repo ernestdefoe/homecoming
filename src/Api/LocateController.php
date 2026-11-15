@@ -3,6 +3,7 @@
 namespace ErnestDefoe\Homecoming\Api;
 
 use ErnestDefoe\Homecoming\RateLimit;
+use ErnestDefoe\Homecoming\Weather\LookupBusy;
 use ErnestDefoe\Homecoming\Weather\Places;
 use Flarum\Foundation\ValidationException;
 use Flarum\Http\RequestUtil;
@@ -57,9 +58,16 @@ class LocateController implements RequestHandlerInterface
         }
 
         // No town name (the lookup failed): still the member's weather, shown as "your location".
-        $label = $this->places->reverse($lat, $lng, $this->locales->getLocale()) ?? '';
+        // Another lookup this second: save the point now, and tell the browser to ask once more for its name.
+        try {
+            $label = $this->places->reverse($lat, $lng, $this->locales->getLocale()) ?? '';
+            $retry = false;
+        } catch (LookupBusy) {
+            $label = '';
+            $retry = true;
+        }
         $this->places->save($actor, $lat, $lng, $label);
 
-        return new JsonResponse(['place' => ['label' => $label, 'source' => 'own']]);
+        return new JsonResponse(['place' => ['label' => $label, 'source' => 'own'], 'retry' => $retry]);
     }
 }

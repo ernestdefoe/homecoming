@@ -19,6 +19,10 @@ class FakePlaces extends Places
 
     public function search(string $query, string $locale): ?array
     {
+        if ($query === 'Offline') {
+            return null;
+        }
+
         return $query === 'Nowhere' ? [] : [['label' => 'Portland, Oregon, United States', 'lat' => 45.52, 'lng' => -122.68]];
     }
 }

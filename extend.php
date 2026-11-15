@@ -20,7 +20,7 @@ use ErnestDefoe\Homecoming\Widget;
 use Flarum\Discussion\Event\UserRead;
 use Flarum\Extend;
 use Flarum\Post\Event\Posted;
-use Flarum\Settings\Event\Saved;
+use Flarum\Settings\Event\Saving;
 
 $extenders = [
     (new Extend\Frontend('forum'))
@@ -69,7 +69,7 @@ $extenders = [
     (new Extend\Event())
         ->listen(UserRead::class, fn (UserRead $event) => resolve(Dashboard::class)->forget((int) $event->state->user_id))
         ->listen(Posted::class, fn (Posted $event) => resolve(Dashboard::class)->forget((int) $event->post->user_id))
-        ->listen(Saved::class, DefaultTown::class),
+        ->listen(Saving::class, DefaultTown::class),
 ];
 
 // flarum/gdpr: export the member's weather place, and erase it in both modes.
@@ -78,10 +78,10 @@ $extenders[] = (new Extend\Conditional())->whenExtensionEnabled('flarum-gdpr', f
 ]);
 
 // The blocks only offer the pieces in Page Builder's editor; the client draws them like every other host.
-if (class_exists(\Ernestdefoe\PageBuilder\Extend\PageBuilderBlock::class)) {
-    $extenders[] = new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\WelcomeStripBlock::class);
-    $extenders[] = new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\StatsCardBlock::class);
-    $extenders[] = new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\CompactCardBlock::class);
-}
+$extenders[] = (new Extend\Conditional())->whenExtensionEnabled('ernestdefoe-page-builder', fn () => [
+    new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\WelcomeStripBlock::class),
+    new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\StatsCardBlock::class),
+    new \Ernestdefoe\PageBuilder\Extend\PageBuilderBlock(Widget\CompactCardBlock::class),
+]);
 
 return $extenders;

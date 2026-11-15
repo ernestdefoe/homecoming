@@ -65,7 +65,10 @@
                 "ernestdefoe/ladder",
                 "ernestdefoe/answers",
                 "ernestdefoe/curio",
-                "ernestdefoe/member-map"
+                "ernestdefoe/member-map",
+                "ernestdefoe/page-builder",
+                "ernestdefoe/bespoke",
+                "fof/forum-widgets-core"
             ]
         }
     },
